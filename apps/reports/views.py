@@ -117,22 +117,75 @@ class ReportViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='download')
     def download_file(self, request, pk=None):
         """Download PDF file for a report"""
-        from django.http import FileResponse, Http404
+        from django.http import FileResponse, HttpResponse, Http404
+        import os
+        import logging
         
+        logger = logging.getLogger(__name__)
         report = self.get_object()
         
+        logger.info(f"Download request for report {report.report_id} by user {request.user.username}")
+        
+        # Check if report has a file field populated
         if not report.file:
-            return Response(
-                {'error': 'No file available for this report'},
-                status=status.HTTP_404_NOT_FOUND
+            logger.warning(f"Report {report.report_id} has no file attached")
+            response = HttpResponse(
+                'No file available for this report. The report may not have been uploaded yet.',
+                content_type='text/plain',
+                status=404
             )
+            return response
+        
+        # Check if file actually exists on filesystem
+        try:
+            file_path = report.file.path
+            if not os.path.exists(file_path):
+                logger.error(f"File not found on server for report {report.report_id}: {file_path}")
+                response = HttpResponse(
+                    'File not found on server. It may have been deleted or moved.',
+                    content_type='text/plain',
+                    status=404
+                )
+                return response
+        except (ValueError, AttributeError) as e:
+            logger.error(f"Error accessing file path for report {report.report_id}: {str(e)}")
+            response = HttpResponse(
+                f'Error accessing file: Invalid file configuration.',
+                content_type='text/plain',
+                status=500
+            )
+            return response
         
         try:
-            response = FileResponse(report.file.open('rb'), content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="{report.report_id}.pdf"'
-            return response
-        except Exception as e:
-            return Response(
-                {'error': f'Error downloading file: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            # Extract filename from file path
+            filename = os.path.basename(report.file.name)
+            # If no filename, use report_id
+            if not filename or filename == '':
+                filename = f'{report.report_id}.pdf'
+            
+            logger.info(f"Serving file {filename} for report {report.report_id}")
+            
+            # Open file and create response
+            response = FileResponse(
+                report.file.open('rb'), 
+                content_type='application/pdf'
             )
+            # Set Content-Disposition header with filename
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response['Content-Length'] = os.path.getsize(file_path)
+            
+            # Add CORS headers if needed for download
+            response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+            
+            logger.info(f"Successfully initiated download for report {report.report_id}")
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error downloading file for report {report.report_id}: {str(e)}", exc_info=True)
+            response = HttpResponse(
+                f'Error downloading file. Please try again or contact support.',
+                content_type='text/plain',
+                status=500
+            )
+            return response
+
