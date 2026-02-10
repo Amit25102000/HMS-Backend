@@ -11,15 +11,28 @@ class UserSerializer(serializers.ModelSerializer):
     """Serializer for User model"""
     
     password = serializers.CharField(write_only=True, required=False)
+    role_display = serializers.CharField(source='get_role_display', read_only=True)
+    groups = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
     
     class Meta:
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
-            'role', 'phone', 'address', 'profile_picture',
-            'is_active', 'created_at', 'password'
+            'role', 'role_display', 'phone', 'address', 'profile_picture',
+            'is_active', 'created_at', 'groups', 'permissions', 'password'
         ]
         read_only_fields = ['id', 'created_at']
+    
+    def get_groups(self, obj):
+        """Return user's group names"""
+        return [group.name for group in obj.groups.all()]
+    
+    def get_permissions(self, obj):
+        """Return user's permissions"""
+        # Get all permissions (from groups and user-specific)
+        perms = obj.get_all_permissions()
+        return list(perms)
     
     def create(self, validated_data):
         password = validated_data.pop('password', None)

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription - {{ prescription.prescription_id }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', 'Noto Sans Devanagari', sans-serif;
+            background: #f5f5f5;
+            padding: 10px;
+        }
+
+        .prescription-page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: white;
+            position: relative;
+            padding: 0;
+        }
+
+        /* Decorative Top Border */
+        .top-border {
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(to bottom, #e8f4f8 0%, #d4e9f2 100%);
+            border-bottom: 2px solid #b8d4e0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .top-border::before {
+            content: '👶 👧 👦 🧒 👶 👧 👦 🧒 👶 👧 👦 🧒 👶 👧 👦 🧒 👶 👧 👦 🧒';
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-size: 24px;
+            opacity: 0.6;
+            top: 8px;
+            letter-spacing: 8px;
+        }
+
+        /* Header Section */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 30px 15px 30px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .doctor-info {
+            flex: 1;
+            padding-right: 20px;
+        }
+
+        .doctor-name-hindi {
+            font-size: 24px;
+            font-weight: 700;
+            color: #8b4513;
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            margin-bottom: 5px;
+        }
+
+        .doctor-qualification {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .doctor-specialization {
+            font-size: 12px;
+            color: #555;
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            margin-bottom: 8px;
+        }
+
+        .clinic-address {
+            font-size: 11px;
+            color: #666;
+            line-height: 1.5;
+            font-family: 'Noto Sans Devanagari', sans-serif;
+        }
+
+        .registration-number {
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        /* Patient Info Box */
+        .patient-box {
+            width: 400px;
+            border: 2px solid #666;
+            border-radius: 15px;
+            padding: 15px;
+            background: #fafafa;
+        }
+
+        .patient-box .field {
+            display: flex;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .patient-box .field:last-child {
+            margin-bottom: 0;
+        }
+
+        .patient-box .field label {
+            font-weight: 500;
+            color: #333;
+            margin-right: 10px;
+            min-width: 80px;
+        }
+
+        .patient-box .field .value {
+            color: #000;
+            flex: 1;
+            border-bottom: 1px dotted #999;
+        }
+
+        .patient-box .field-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .patient-box .field-row .field {
+            flex: 1;
+            margin-bottom: 8px;
+        }
+
+        /* Main Content Area */
+        .content-area {
+            display: flex;
+            padding: 20px 30px;
+            min-height: 500px;
+            position: relative;
+        }
+
+        /* Left Column Box */
+        .left-column {
+            width: 180px;
+            border: 2px solid #666;
+            border-radius: 15px;
+            padding: 15px;
+            margin-right: 20px;
+            background: #fafafa;
+            flex-shrink: 0;
+        }
+
+        .left-column .section {
+            margin-bottom: 100px;
+        }
+
+        .left-column .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .left-column .section h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .left-column .section .content {
+            font-size: 12px;
+            color: #555;
+            min-height: 60px;
+            line-height: 1.6;
+        }
+
+        /* Center Watermark */
+        .watermark {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.08;
+            font-size: 350px;
+            color: #999;
+            pointer-events: none;
+            z-index: 0;
+            line-height: 1;
+        }
+
+        /* Right/Main Area */
+        .right-area {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .rx-heading {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            font-family: Georgia, serif;
+            margin-bottom: 20px;
+        }
+
+        .medicine-list {
+            margin-top: 20px;
+        }
+
+        .medicine-item {
+            margin-bottom: 15px;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        /* Footer Section */
+        .footer-section {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            padding: 20px 30px;
+            border-top: 1px solid #ddd;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .footer-left {
+            flex: 0 0 150px;
+        }
+
+        .owl-decoration {
+            width: 120px;
+            height: 100px;
+            font-size: 60px;
+            text-align: center;
+            line-height: 100px;
+        }
+
+        .footer-center {
+            flex: 1;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .clinic-info {
+            font-size: 11px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .clinic-info-hindi {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .medico-legal {
+            color: #8b0000;
+            font-weight: 600;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .footer-right {
+            text-align: right;
+            flex: 0 0 200px;
+        }
+
+        .timing {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            font-size: 12px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .phone {
+            font-size: 13px;
+            font-weight: 600;
+            color: #000;
+            margin-top: 5px;
+        }
+
+        .code-number {
+            position: absolute;
+            right: 10px;
+            bottom: 80px;
+            font-size: 10px;
+            color: #999;
+            transform: rotate(90deg);
+            transform-origin: right bottom;
+        }
+
+        /* Bottom Border */
+        .bottom-border {
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(to top, #e8f4f8 0%, #d4e9f2 100%);
+            border-top: 2px solid #b8d4e0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bottom-border::before {
+            content: '👶 👧 👦 🧒 👶 👧 👦 🧒 👶 👧 👦 🧒 👶 👧 👦 🧒 👶 👧 👦 🧒';
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-size: 24px;
+            opacity: 0.6;
+            bottom: 8px;
+            letter-spacing: 8px;
+        }
+
+        .scanner-text {
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+            font-size: 10px;
+            color: #999;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .prescription-page {
+                width: 100%;
+                margin: 0;
+                box-shadow: none;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            @page {
+                size: A4;
+                margin: 0;
+            }
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-print {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #2980b9;
+        }
+
+        .btn-pdf {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-pdf:hover {
+            background: #c0392b;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Action Buttons -->
+    <div class="action-buttons no-print">
+        <button class="btn btn-print" onclick="window.print()">🖨️ Print Prescription</button>
+        <button class="btn btn-pdf" onclick="downloadPDF()">📄 Download PDF</button>
+    </div>
+
+    <div class="prescription-page">
+        <!-- Top Decorative Border -->
+        <div class="top-border"></div>
+
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="doctor-info">
+                <div class="doctor-name-hindi">
+                    {% if doctor.hindi_name %}
+                    {{ doctor.hindi_name }}
+                    {% else %}
+                    डॉ. {{ doctor.user.first_name }} {{ doctor.user.last_name }}
+                    {% endif %}
+                </div>
+                <div class="doctor-qualification">{{ doctor.qualification|default:"MBBS, PGDMCH" }}</div>
+                <div class="doctor-specialization">
+                    {% if doctor.specialization_hindi %}
+                    {{ doctor.specialization_hindi }}
+                    {% else %}
+                    {{ doctor.specialization }}
+                    {% endif %}
+                </div>
+                <div class="clinic-address">
+                    {% if clinic_address_hindi %}
+                    {{ clinic_address_hindi }}
+                    {% else %}
+                    {{ hospital_address }}
+                    {% endif %}
+                </div>
+                <div class="registration-number">रजि. नं: {{ doctor.registration_number }}</div>
+            </div>
+
+            <div class="patient-box">
+                <div class="field">
+                    <label>Reg. No.</label>
+                    <div class="value">{{ prescription.prescription_id }}</div>
+                </div>
+                <div class="field">
+                    <label>Name</label>
+                    <div class="value">{{ prescription.patient_name }}</div>
+                    <label style="margin-left: 20px; min-width: auto;">Date :</label>
+                    <div class="value" style="max-width: 100px;">{{ prescription.consultation_date|date:"d/m/Y" }}</div>
+                </div>
+                <div class="field">
+                    <label>Address :</label>
+                    <div class="value">{{ prescription.patient_address }}</div>
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label>Age/Sex :</label>
+                        <div class="value">{{ prescription.patient_age }}Y / {{ prescription.get_patient_gender_display
+                            }}</div>
+                    </div>
+                    <div class="field">
+                        <label>Weight :</label>
+                        <div class="value">{% if prescription.patient_weight %}{{ prescription.patient_weight }} kg{%
+                            endif %}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <!-- Left Column Box -->
+            <div class="left-column">
+                <div class="section">
+                    <h3>Complain</h3>
+                    <div class="content">{{ prescription.complaint|default:"" }}</div>
+                </div>
+                <div class="section">
+                    <h3>On Examination</h3>
+                    <div class="content">{{ prescription.on_examination|default:"" }}</div>
+                </div>
+                <div class="section">
+                    <h3>Provisional Diagnosis</h3>
+                    <div class="content">{{ prescription.provisional_diagnosis|default:"" }}</div>
+                </div>
+                <div class="section">
+                    <h3>Investigations</h3>
+                    <div class="content">{{ prescription.investigations|default:"" }}</div>
+                </div>
+            </div>
+
+            <!-- Center Watermark -->
+            <div class="watermark">⚕</div>
+
+            <!-- Right/Main Area -->
+            <div class="right-area">
+                <div class="rx-heading">Rx</div>
+                <div class="medicine-list">
+                    {% for med in medicines %}
+                    <div class="medicine-item">
+                        {{ forloop.counter }}. {{ med.medicine.name }}
+                        {% if med.medicine.brand %}({{ med.medicine.brand }}){% endif %}
+                        - {{ med.dosage }} - {{ med.frequency }} - {{ med.duration }}
+                        {% if med.instructions %}<br>&nbsp;&nbsp;&nbsp;{{ med.instructions }}{% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="medicine-item">-</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Code Number -->
+            <div class="code-number">{{ prescription.prescription_id }}</div>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer-section">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="owl-decoration">🦉🦜</div>
+                </div>
+
+                <div class="footer-center">
+                    <div class="clinic-info-hindi">
+                        यह पर्चा वै मिडिया के लिए मान्य है।<br>
+                        सूचाकरन - चैकेशेकरन एवं त्वबंदास्करचान<br>
+                        पता - कोपिशिक क्लिनिक (केन्द्रीय स्वास्थ्य), युनिसिटी के सामने, बालाघाट (म.प्र.)
+                    </div>
+                    <div class="medico-legal">Not for Medico Legal Purpose</div>
+                </div>
+
+                <div class="footer-right">
+                    <div class="timing">समय: सुबह 8:00-9:00</div>
+                    <div class="timing">शाम 5:00-8:00</div>
+                    <div class="timing">रविवार सुबह 10:00-11:00</div>
+                    <div class="phone">मो.-{{ hospital_phone|default:"97533 46392" }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Decorative Border -->
+        <div class="bottom-border">
+            <div class="scanner-text">Scanned with CamScanner</div>
+        </div>
+    </div>
+
+    <script>
+        function downloadPDF() {
+            const prescriptionId = "{{ prescription.id }}";
+            window.location.href = `/api/prescriptions/${prescriptionId}/pdf/`;
+        }
+    </script>
+</body>
+
+</html>

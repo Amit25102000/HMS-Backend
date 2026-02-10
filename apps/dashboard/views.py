@@ -323,3 +323,94 @@ def staff_dashboard(request):
         }
     })
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def menu_config(request):
+    """
+    Get role-based menu configuration for the current user
+    Returns menu items and permissions based on user role
+    """
+    from .menu_config import get_user_menu
+    
+    menu_data = get_user_menu(request.user)
+    return Response(menu_data)
+
+
+@api_view(['GET'])
+def superadmin_dashboard(request):
+    """
+    SuperAdmin Dashboard API
+    Returns comprehensive system-wide statistics
+    """
+    from apps.authentication.permissions import IsSuperAdminUser
+    
+    # Check permission
+    permission = IsSuperAdminUser()
+    if not permission.has_permission(request, None):
+        return Response(
+            {'error': 'SuperAdmin access required'},
+            status=403
+        )
+    
+    # Return dummy data if enabled
+    if settings.DUMMY_DATA:
+        return Response(dummy_service.get_admin_dashboard_data())
+    
+    today = timezone.now().date()
+    
+    # System-wide statistics
+    from apps.authentication.models import User
+    total_users = User.objects.filter(is_active=True).count()
+    total_patients = Patient.objects.filter(is_active=True).count()
+    total_doctors = Doctor.objects.filter(is_available=True).count()
+    total_staff = User.objects.filter(
+        is_active=True,
+        role__in=['STAFF', 'RECEPTIONIST', 'PHARMACIST', 'ACCOUNTANT']
+    ).count()
+    
+    # Appointments
+    today_appointments = Appointment.objects.filter(appointment_date=today).count()
+    pending_appointments = Appointment.objects.filter(
+        status='PENDING',
+        appointment_date__gte=today
+    ).count()
+    
+    # Revenue
+    today_revenue = Invoice.objects.filter(
+        created_at__date=today
+    ).aggregate(total=Sum('total_amount'))['total'] or 0
+    
+    month_start = today.replace(day=1)
+    month_revenue = Invoice.objects.filter(
+        created_at__date__gte=month_start
+    ).aggregate(total=Sum('total_amount'))['total'] or 0
+    
+    # Inventory
+    total_medicines = Medicine.objects.filter(is_active=True).count()
+    low_stock_count = len([m for m in Medicine.objects.all() if m.is_low_stock])
+    
+    return Response({
+        'users': {
+            'total': total_users,
+            'doctors': total_doctors,
+            'staff': total_staff,
+        },
+        'patients': {
+            'total': total_patients,
+        },
+        'appointments': {
+            'today': today_appointments,
+            'pending': pending_appointments,
+        },
+        'revenue': {
+            'today': float(today_revenue),
+            'month': float(month_revenue),
+        },
+        'inventory': {
+            'total_medicines': total_medicines,
+            'low_stock': low_stock_count,
+        }
+    })
+
+

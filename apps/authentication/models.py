@@ -13,6 +13,7 @@ class User(AbstractUser):
     """
     
     ROLE_CHOICES = [
+        ('SUPER_ADMIN', 'Super Admin'),
         ('ADMIN', 'Admin'),
         ('DOCTOR', 'Doctor'),
         ('STAFF', 'Staff'),  # General staff role
@@ -37,8 +38,17 @@ class User(AbstractUser):
         return f"{self.get_full_name()} ({self.get_role_display()})"
     
     @property
+    def is_super_admin(self):
+        return self.role == 'SUPER_ADMIN'
+    
+    @property
     def is_admin(self):
         return self.role == 'ADMIN'
+    
+    @property
+    def is_admin_or_super(self):
+        """Check if user is Admin or SuperAdmin"""
+        return self.role in ['ADMIN', 'SUPER_ADMIN']
     
     @property
     def is_doctor(self):

@@ -84,6 +84,25 @@ DATABASES = {
     }
 }
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'mydb',
+        'USER': 'admin',
+        'PASSWORD': 'Deepak111@111#',
+        'HOST': '93.127.172.68',
+        'PORT': '5432',
+        'OPTIONS': {
+            'options': '-c timezone=Asia/Kolkata',
+        },
+    }
+}
+
+
+TIME_ZONE = 'Asia/Kolkata'
+USE_TZ = True
+
+
 # Custom User Model
 AUTH_USER_MODEL = 'authentication.User'
 
@@ -162,12 +181,14 @@ HOSPITAL_NAME = config('HOSPITAL_NAME', default='City General Hospital')
 HOSPITAL_ADDRESS = config('HOSPITAL_ADDRESS', default='123 Medical Street, Healthcare City')
 HOSPITAL_PHONE = config('HOSPITAL_PHONE', default='+1-234-567-8900')
 HOSPITAL_EMAIL = config('HOSPITAL_EMAIL', default='info@cityhospital.com')
+HOSPITAL_TAGLINE = config('HOSPITAL_TAGLINE', default='Excellence in Healthcare')
 
 # Clinic/Doctor Information (for prescription PDF generation)
 DOCTOR_NAME = config('DOCTOR_NAME', default='Dr. Medical Practitioner')
 DOCTOR_QUALIFICATION = config('DOCTOR_QUALIFICATION', default='MBBS, MD')
 DOCTOR_REGISTRATION_NO = config('DOCTOR_REGISTRATION_NO', default='MCI-12345')
 CLINIC_ADDRESS = config('CLINIC_ADDRESS', default='Medical Clinic, Healthcare Building, City - 123456')
+CLINIC_ADDRESS_HINDI = config('CLINIC_ADDRESS_HINDI', default='', cast=str)
 CLINIC_TIMINGS = config('CLINIC_TIMINGS', default='Mon-Sat: 9:00 AM - 6:00 PM | Sunday: Closed')
 
 # Dummy Data Mode (for development/demo without database)

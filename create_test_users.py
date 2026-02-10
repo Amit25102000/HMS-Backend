@@ -1,38 +1,42 @@
-"""
-Script to create test users for all roles
-Run with: python manage.py shell < create_test_users.py
-"""
-from apps.authentication.models import User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 
-# Create test users with all roles
-users_to_create = [
-    {'username': 'admin', 'password': 'admin123', 'role': 'ADMIN', 'first_name': 'Admin', 'last_name': 'User', 'email': 'admin@hospital.com'},
-    {'username': 'doctor', 'password': 'doctor123', 'role': 'DOCTOR', 'first_name': 'John', 'last_name': '  Doe', 'email': 'doctor@hospital.com'},
-    {'username': 'staff', 'password': 'staff123', 'role': 'STAFF', 'first_name': 'Jane', 'last_name': 'Smith', 'email': 'staff@hospital.com'},
-    {'username': 'receptionist', 'password': 'receptionist123', 'role': 'RECEPTIONIST', 'first_name': 'Sarah', 'last_name': 'Johnson', 'email': 'receptionist@hospital.com'},
-]
+User = get_user_model()
 
-for user_data in users_to_create:
-    username = user_data['username']
-    # Check if user already exists
-    if User.objects.filter(username=username).exists():
-        print(f"User '{username}' already exists, skipping...")
-        continue
-    
-    # Create user
-    user = User.objects.create_user(
-        username=user_data['username'],
-        password=user_data['password'],
-        first_name=user_data['first_name'],
-        last_name=user_data['last_name'],
-        email=user_data['email'],
-        role=user_data['role']
+# Create superuser if doesn't exist
+if not User.objects.filter(username='admin').exists():
+    admin = User.objects.create_superuser(
+        username='admin',
+        email='admin@hospital.com',
+        password='admin123',
+        first_name='Admin',
+        last_name='User',
+        role='ADMIN'
     )
-    print(f"Created user: {username} ({user_data['role']})")
+    # Add to Admin group
+    admin_group, _ = Group.objects.get_or_create(name='Admin')
+    admin.groups.add(admin_group)
+    print(f'✓ Created admin user: {admin.username}')
+else:
+    print('Admin user already exists')
 
-print("\nTest users created successfully!")
-print("\nLogin credentials:")
-print("Admin: admin / admin123")
-print("Doctor: doctor / doctor123")
-print("Staff: staff / staff123")
-print("Receptionist: receptionist / receptionist123")
+# Create test doctor
+if not User.objects.filter(username='doctor').exists():
+    doctor = User.objects.create_user(
+        username='doctor',
+        email='doctor@hospital.com',
+        password='doctor123',
+        first_name='Test',
+        last_name='Doctor',
+        role='DOCTOR'
+    )
+    doctor_group, _ = Group.objects.get_or_create(name='Doctor')
+    doctor.groups.add(doctor_group)
+    print(f'✓ Created doctor user: {doctor.username}')
+else:
+    print('Doctor user already exists')
+
+# List all users
+print('\n--- All Users ---')
+for user in User.objects.all():
+    print(f'{user.username} - {user.get_role_display()} - Active: {user.is_active}')

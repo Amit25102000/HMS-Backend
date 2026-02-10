@@ -35,6 +35,16 @@ class Doctor(models.Model):
     experience_years = models.IntegerField(default=0)
     registration_number = models.CharField(max_length=50, unique=True)
     consultation_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
+    # Profile and signature images for prescriptions
+    profile_image = models.ImageField(upload_to='doctors/profiles/', blank=True, null=True, help_text='Doctor profile photo for prescription')
+    signature = models.ImageField(upload_to='doctors/signatures/', blank=True, null=True, help_text='Doctor signature for prescription')
+    bio = models.TextField(blank=True, null=True, help_text='Doctor biography/description')
+    
+    # Hindi text fields for traditional prescriptions
+    hindi_name = models.CharField(max_length=200, blank=True, null=True, help_text='Doctor name in Hindi (e.g., डॉ. नाम)')
+    specialization_hindi = models.CharField(max_length=200, blank=True, null=True, help_text='Specialization in Hindi')
+    
     is_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -56,3 +56,27 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
                 {'error': f'Failed to generate PDF: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+    
+    @action(detail=True, methods=['get'])
+    def html_view(self, request, pk=None):
+        """Render prescription as HTML for browser viewing and printing"""
+        from django.shortcuts import render
+        from django.conf import settings
+        
+        prescription = self.get_object()
+        medicines = prescription.prescription_medicines.all()
+        
+        context = {
+            'prescription': prescription,
+            'doctor': prescription.doctor,
+            'medicines': medicines,
+            'hospital_name': getattr(settings, 'HOSPITAL_NAME', 'City General Hospital'),
+            'hospital_address': getattr(settings, 'HOSPITAL_ADDRESS', ''),
+            'hospital_phone': getattr(settings, 'HOSPITAL_PHONE', ''),
+            'hospital_email': getattr(settings, 'HOSPITAL_EMAIL', ''),
+            'hospital_tagline': getattr(settings, 'HOSPITAL_TAGLINE', 'Excellence in Healthcare'),
+            'clinic_timings': getattr(settings, 'CLINIC_TIMINGS', ''),
+            'clinic_address_hindi': getattr(settings, 'CLINIC_ADDRESS_HINDI', ''),
+        }
+        
+        return render(request, 'prescriptions/prescription_view.html', context)

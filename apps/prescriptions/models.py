@@ -34,6 +34,7 @@ class Prescription(models.Model):
     patient_age = models.IntegerField(validators=[MinValueValidator(0)])
     patient_gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     patient_address = models.TextField()
+    patient_weight = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, help_text='Patient weight in kg')
     
     # Doctor and Date
     doctor = models.ForeignKey(Doctor, on_delete=models.SET_NULL, null=True, related_name='prescriptions')

@@ -105,14 +105,38 @@ def generate_prescription_pdf(prescription):
     )
     
     # ==================== DOCTOR HEADER ====================
-    doctor_name = getattr(settings, 'DOCTOR_NAME', 'Dr. Medical Practitioner')
-    doctor_qual = getattr(settings, 'DOCTOR_QUALIFICATION', 'MBBS, MD')
-    doctor_reg = getattr(settings, 'DOCTOR_REGISTRATION_NO', 'REG-12345')
+    doctor = prescription.doctor
+    
+    # Use doctor data if available, fallback to settings
+    if doctor:
+        doctor_name = f"Dr. {doctor.user.get_full_name()}"
+        doctor_qual = doctor.qualification
+        doctor_reg = doctor.registration_number
+        specialization = doctor.specialization
+        department = doctor.department.name if doctor.department else ""
+    else:
+        doctor_name = getattr(settings, 'DOCTOR_NAME', 'Dr. Medical Practitioner')
+        doctor_qual = getattr(settings, 'DOCTOR_QUALIFICATION', 'MBBS, MD')
+        doctor_reg = getattr(settings, 'DOCTOR_REGISTRATION_NO', 'REG-12345')
+        specialization = ""
+        department = ""
+    
     clinic_address = getattr(settings, 'CLINIC_ADDRESS', 'Clinic Address')
     clinic_timings = getattr(settings, 'CLINIC_TIMINGS', 'Mon-Sat: 9 AM - 6 PM')
+    hospital_name = getattr(settings, 'HOSPITAL_NAME', 'City General Hospital')
     
+    # Hospital/Clinic Header
+    elements.append(Paragraph(f"<b>{hospital_name}</b>", header_style))
+    elements.append(Paragraph(clinic_address, subheader_style))
+    elements.append(Spacer(1, 0.3*cm))
+    
+    # Doctor info section
     elements.append(Paragraph(f"<b>{doctor_name}</b>", header_style))
     elements.append(Paragraph(doctor_qual, subheader_style))
+    if specialization:
+        elements.append(Paragraph(f"<i>{specialization}</i>", subheader_style))
+    if department:
+        elements.append(Paragraph(f"Department of {department}", subheader_style))
     elements.append(Paragraph(f"Reg. No: {doctor_reg}", subheader_style))
     elements.append(Paragraph(clinic_address, subheader_style))
     elements.append(Spacer(1, 0.3*cm))
